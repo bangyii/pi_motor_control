@@ -18,9 +18,15 @@ float map(float in, float inMin, float inMax, float outMin, float outMax){
 }
 
 void velCallback(const geometry_msgs::Twist::ConstPtr &msg) {
-	float forward = map(msg-> linear.x, -0.5, 0.5, 1450, 1550);
-	float angular = map(msg-> angular.z, -1.0, 1.0, 1900, 1100);
-	ROS_INFO("Velocity command received");
+	float forward = msg->linear.x;
+	float angular = msg->angular.z;
+	ROS_DEBUG("Velocity command received");
+
+	if(forward > 0) forward = map(forward, 0, 1, MOTOR_NEUTRAL, MOTOR_FOR_MAX);
+	else if(forward < 0) forward = map(forward, -1, 0, MOTOR_REV_MAX, MOTOR_NEUTRAL);
+
+	if(angular < 0) angular = map(angular, 0, 1, 1500, 2000);
+	else if(angular > 0) angular = map(angular, -1, 0, 1000, 1500);
 
 //	//Forward control
 //	if(forward > 0 && motorIndex < 2) motorIndex ++;
@@ -38,8 +44,8 @@ void velCallback(const geometry_msgs::Twist::ConstPtr &msg) {
 void sigintHandler(int signum){
 	ROS_INFO("Shutting down node");
 	//Shutdown servos
-	set_servo_pulsewidth(gpio, MOTOR_PIN, 0);
-	set_servo_pulsewidth(gpio, SERVO_PIN, 0);
+	set_servo_pulsewidth(gpio, MOTOR_PIN, 1500);
+	set_servo_pulsewidth(gpio, SERVO_PIN, 1500);
 
 	pigpio_stop(gpio);
 	ros::shutdown();
@@ -71,28 +77,6 @@ int main(int argc, char **argv) {
 	ROS_INFO("Armed");
 
 	ros::spin();
-//	//Main loop to handle Twist messages
-//	while (ros::ok()) {
-//		// ROS_INFO("Stepping servo");
-//		ros::Duration(0.1).sleep();
-//		if (step > 1530)
-//			dir = -1;
-//		else if (step < 1460)
-//			dir = 1;
-//		step = step + 4 * dir;
-//		//set_servo_pulsewidth(gpio, SERVO_PIN, step);
-//
-//		if (step == 1500)
-//			continue; //Skip 1500
-//		if (stepOld >= 1500 && step < 1500) { //Commanded reverse
-//			set_servo_pulsewidth(gpio, MOTOR_PIN, step);
-//			set_servo_pulsewidth(gpio, MOTOR_PIN, stepOld);
-//			set_servo_pulsewidth(gpio, MOTOR_PIN, step);
-//		}
-//		stepOld = step;
-//
-//		set_servo_pulsewidth(gpio, MOTOR_PIN, step);
-//	}
 
 	return 0;
 }
