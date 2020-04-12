@@ -8,28 +8,26 @@
 #define MOTOR_REV_MAX 1460
 #define MOTOR_NEUTRAL 1500
 
-int gpio;
+int gpio, motorIndex = 1, servoIndex = 1;
+int pwm_motor = {MOTOR_REV_MAX, MOTOR_NEUTRAL, MOTOR_FOR_MAX};
+int pwm_servo = {1100, 1500, 1900};
 
 void velCallback(const geometry_msgs::Twist::ConstPtr &msg) {
 	float forward = msg-> linear.x;
 	float angular = msg-> angular.z;
 	ROS_INFO("Velocity command received");
 
-	if(forward > 0)
-		set_servo_pulsewidth(gpio, MOTOR_PIN, MOTOR_FOR_MAX);
+	//Forward control
+	if(forward > 0 && motorIndex < 2) motorIndex ++;
+	else if(forward < 0 && motorIndex > 0) motorIndex--;
 
-	else if(forward < 0)
-		set_servo_pulsewidth(gpio, MOTOR_PIN, MOTOR_REV_MAX);
+	set_servo_pulsewidth(gpio, MOTOR_PIN, (int)pwm_motor[motorIndex]);
 
-	else set_servo_pulsewidth(gpio, MOTOR_PIN, MOTOR_NEUTRAL);
+	//Reverse control
+	if(angular > 0 && servoIndex < 2) servoIndex++;
+	else if(angular == -1 && servoIndex > 0) servoIndex--;
 
-	if(angular == 1)
-		set_servo_pulsewidth(gpio, SERVO_PIN, 1100);
-
-	else if(angular == -1)
-		set_servo_pulsewidth(gpio, SERVO_PIN, 1900);
-
-	else set_servo_pulsewidth(gpio, SERVO_PIN, MOTOR_NEUTRAL);
+	set_servo_pulsewidth(gpio, SERVO_PIN, (int)pwm_servo[servoIndex]);
 }
 
 int main(int argc, char **argv) {
