@@ -13,11 +13,20 @@ int gpio;
 void velCallback(const geometry_msgs::Twist::ConstPtr &msg) {
 	float forward = msg-> linear.x;
 	float angular = msg-> angular.z;
+	ROS_INFO("Velocity command received");
 
-	if(forward == 0.8)
+	if(forward == 0.8){
 		set_servo_pulsewidth(gpio, MOTOR_PIN, MOTOR_FOR_MAX);
+		ROS_INFO("Set forward");
+	}
 
 	else set_servo_pulsewidth(gpio, MOTOR_PIN, MOTOR_REV_MAX);
+
+	if(angular == 1){
+		set_servo_pulsewidth(gpio, SERVO_PIN, 1100);
+	}
+
+	else set_servo_pulsewidth(gpio, SERVO_PIN, 1900);
 }
 
 int main(int argc, char **argv) {
