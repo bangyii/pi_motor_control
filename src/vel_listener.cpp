@@ -9,8 +9,8 @@
 #define MOTOR_NEUTRAL 1500
 
 int gpio, motorIndex = 1, servoIndex = 1;
-int pwm_motor = {MOTOR_REV_MAX, MOTOR_NEUTRAL, MOTOR_FOR_MAX};
-int pwm_servo = {1100, 1500, 1900};
+int pwm_motor[] = {MOTOR_REV_MAX, MOTOR_NEUTRAL, MOTOR_FOR_MAX};
+int pwm_servo[] = {1100, 1500, 1900};
 
 void velCallback(const geometry_msgs::Twist::ConstPtr &msg) {
 	float forward = msg-> linear.x;
