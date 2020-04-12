@@ -23,8 +23,8 @@ void velCallback(const geometry_msgs::Twist::ConstPtr &msg) {
 int main(int argc, char **argv) {
 	int step = 1500, dir = 1, stepOld = 1500, neautral = 1500;
 
-	ros::Rate r(50);
 	ros::init(argc, argv, "vel_listener");
+	ros::Rate r(50);
 	ros::NodeHandle nh;
 	ros::Subscriber vel_sub = nh.subscribe("cmd_vel", 10, velCallback);
 
