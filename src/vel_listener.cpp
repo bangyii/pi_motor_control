@@ -18,21 +18,21 @@ float map(float in, float inMin, float inMax, float outMin, float outMax){
 }
 
 void velCallback(const geometry_msgs::Twist::ConstPtr &msg) {
-	float forward = msg-> linear.x;
-	float angular = msg-> angular.z;
+	float forward = map(msg-> linear.x, -0.5, 0.5, 1450, 1550);
+	float angular = map(msg-> angular.z, -1.0, 1.0, 1900, 1100);
 	ROS_INFO("Velocity command received");
 
-	//Forward control
-	if(forward > 0 && motorIndex < 2) motorIndex ++;
-	else if(forward < 0 && motorIndex > 0) motorIndex--;
+//	//Forward control
+//	if(forward > 0 && motorIndex < 2) motorIndex ++;
+//	else if(forward < 0 && motorIndex > 0) motorIndex--;
 
-	set_servo_pulsewidth(gpio, MOTOR_PIN, pwm_motor[motorIndex]);
+	set_servo_pulsewidth(gpio, MOTOR_PIN, forward);
 
-	//Reverse control
-	if(angular > 0 && servoIndex < 2) servoIndex++;
-	else if(angular == -1 && servoIndex > 0) servoIndex--;
+//	//Reverse control
+//	if(angular > 0 && servoIndex < 2) servoIndex++;
+//	else if(angular == -1 && servoIndex > 0) servoIndex--;
 
-	set_servo_pulsewidth(gpio, SERVO_PIN, pwm_servo[servoIndex]);
+	set_servo_pulsewidth(gpio, SERVO_PIN, angular);
 }
 
 void sigintHandler(int signum){
