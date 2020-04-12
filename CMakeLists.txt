@@ -209,6 +209,6 @@ include_directories(
 # catkin_add_nosetests(test)
 
 add_executable(vel_listener src/vel_listener.cpp)
-target_link_libraries(vel_listener ${catkin_LIBRARIES} wiringPi rt pigpiod_if2)
+target_link_libraries(vel_listener ${catkin_LIBRARIES} rt pigpiod_if2)
 #add_dependencies(vel_listener ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} pigpiod_if2)
 
