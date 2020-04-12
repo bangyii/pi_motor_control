@@ -1,6 +1,7 @@
 #include "ros/ros.h"
 #include "geometry_msgs/Twist.h"
 #include "pigpiod_if2.h"
+#include <signal.h>
 
 #define SERVO_PIN 26
 #define MOTOR_PIN 19
@@ -12,6 +13,10 @@ int gpio, motorIndex = 1, servoIndex = 1;
 int pwm_motor[] = {MOTOR_REV_MAX, MOTOR_NEUTRAL, MOTOR_FOR_MAX};
 int pwm_servo[] = {1100, 1500, 1900};
 
+float map(float in, float inMin, float inMax, float outMin, float outMax){
+	return (in-inMin)/(inMax-inMin) * (outMax - outMin) + outMin;
+}
+
 void velCallback(const geometry_msgs::Twist::ConstPtr &msg) {
 	float forward = msg-> linear.x;
 	float angular = msg-> angular.z;
@@ -21,13 +26,23 @@ void velCallback(const geometry_msgs::Twist::ConstPtr &msg) {
 	if(forward > 0 && motorIndex < 2) motorIndex ++;
 	else if(forward < 0 && motorIndex > 0) motorIndex--;
 
-	set_servo_pulsewidth(gpio, MOTOR_PIN, (int)pwm_motor[motorIndex]);
+	set_servo_pulsewidth(gpio, MOTOR_PIN, pwm_motor[motorIndex]);
 
 	//Reverse control
 	if(angular > 0 && servoIndex < 2) servoIndex++;
 	else if(angular == -1 && servoIndex > 0) servoIndex--;
 
-	set_servo_pulsewidth(gpio, SERVO_PIN, (int)pwm_servo[servoIndex]);
+	set_servo_pulsewidth(gpio, SERVO_PIN, pwm_servo[servoIndex]);
+}
+
+void sigintHandler(int signum){
+	ROS_INFO("Shutting down node");
+	//Shutdown servos
+	set_servo_pulsewidth(gpio, MOTOR_PIN, 0);
+	set_servo_pulsewidth(gpio, SERVO_PIN, 0);
+
+	pigpio_stop(gpio);
+	ros::shutdown();
 }
 
 int main(int argc, char **argv) {
@@ -37,7 +52,7 @@ int main(int argc, char **argv) {
 	ros::NodeHandle nh;
 	ros::Rate r(50);
 	ros::Subscriber vel_sub = nh.subscribe("cmd_vel", 10, velCallback);
-
+	signal(SIGINT, sigintHandler);
 
 	//Connect to gpio daemon
 	gpio = pigpio_start(NULL, NULL);
