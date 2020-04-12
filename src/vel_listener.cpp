@@ -15,18 +15,21 @@ void velCallback(const geometry_msgs::Twist::ConstPtr &msg) {
 	float angular = msg-> angular.z;
 	ROS_INFO("Velocity command received");
 
-	if(forward == 0.8){
+	if(forward > 0)
 		set_servo_pulsewidth(gpio, MOTOR_PIN, MOTOR_FOR_MAX);
-		ROS_INFO("Set forward");
-	}
 
-	else set_servo_pulsewidth(gpio, MOTOR_PIN, MOTOR_REV_MAX);
+	else if(forward < 0)
+		set_servo_pulsewidth(gpio, MOTOR_PIN, MOTOR_REV_MAX);
 
-	if(angular == 1){
+	else set_servo_pulsewidth(gpio, MOTOR_PIN, MOTOR_NEUTRAL);
+
+	if(angular == 1)
 		set_servo_pulsewidth(gpio, SERVO_PIN, 1100);
-	}
 
-	else set_servo_pulsewidth(gpio, SERVO_PIN, 1900);
+	else if(angular == -1)
+		set_servo_pulsewidth(gpio, SERVO_PIN, 1900);
+
+	else set_servo_pulsewidth(gpio, SERVO_PIN, MOTOR_NEUTRAL);
 }
 
 int main(int argc, char **argv) {
@@ -54,29 +57,29 @@ int main(int argc, char **argv) {
 	ros::Duration(3).sleep();
 	ROS_INFO("Armed");
 
-	//Main loop to handle Twist messages
-	while (ros::ok()) {
-		ros::spin();
-		// ROS_INFO("Stepping servo");
-		ros::Duration(0.1).sleep();
-		if (step > 1530)
-			dir = -1;
-		else if (step < 1460)
-			dir = 1;
-		step = step + 4 * dir;
-		//set_servo_pulsewidth(gpio, SERVO_PIN, step);
-
-		if (step == 1500)
-			continue; //Skip 1500
-		if (stepOld >= 1500 && step < 1500) { //Commanded reverse
-			set_servo_pulsewidth(gpio, MOTOR_PIN, step);
-			set_servo_pulsewidth(gpio, MOTOR_PIN, stepOld);
-			set_servo_pulsewidth(gpio, MOTOR_PIN, step);
-		}
-		stepOld = step;
-
-		set_servo_pulsewidth(gpio, MOTOR_PIN, step);
-	}
+	ros::spin();
+//	//Main loop to handle Twist messages
+//	while (ros::ok()) {
+//		// ROS_INFO("Stepping servo");
+//		ros::Duration(0.1).sleep();
+//		if (step > 1530)
+//			dir = -1;
+//		else if (step < 1460)
+//			dir = 1;
+//		step = step + 4 * dir;
+//		//set_servo_pulsewidth(gpio, SERVO_PIN, step);
+//
+//		if (step == 1500)
+//			continue; //Skip 1500
+//		if (stepOld >= 1500 && step < 1500) { //Commanded reverse
+//			set_servo_pulsewidth(gpio, MOTOR_PIN, step);
+//			set_servo_pulsewidth(gpio, MOTOR_PIN, stepOld);
+//			set_servo_pulsewidth(gpio, MOTOR_PIN, step);
+//		}
+//		stepOld = step;
+//
+//		set_servo_pulsewidth(gpio, MOTOR_PIN, step);
+//	}
 
 	return 0;
 }
