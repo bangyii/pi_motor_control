@@ -22,11 +22,13 @@ void velCallback(const geometry_msgs::Twist::ConstPtr &msg) {
 	float angular = msg->angular.z;
 	ROS_DEBUG("Velocity command received");
 
-	if(forward > 0) forward = map(forward, 0, 1, MOTOR_NEUTRAL, MOTOR_FOR_MAX);
-	else if(forward < 0) forward = map(forward, -1, 0, MOTOR_REV_MAX, MOTOR_NEUTRAL);
+	if(forward > 0) forward = map(forward, 0, 0.8, MOTOR_NEUTRAL, MOTOR_FOR_MAX);
+	else if(forward < 0) forward = map(forward, -0.5, 0, MOTOR_REV_MAX, MOTOR_NEUTRAL);
+	else forward = 1500;
 
-	if(angular < 0) angular = map(angular, 0, 1, 1500, 2000);
-	else if(angular > 0) angular = map(angular, -1, 0, 1000, 1500);
+	if(angular < 0) angular = map(angular, -1, 0, 2000, 1500);
+	else if(angular > 0) angular = map(angular, 0, 1, 1500, 1000);
+	else angular = 1500;
 
 //	//Forward control
 //	if(forward > 0 && motorIndex < 2) motorIndex ++;
